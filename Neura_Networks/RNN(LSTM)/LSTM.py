@@ -343,6 +343,114 @@
 
 #first gpt edit
 
+# !/usr/bin/env python3
+# import numpy as np
+# import pandas as pd
+# import torch
+# from sklearn.preprocessing import LabelEncoder, MinMaxScaler
+# from sklearn.model_selection import train_test_split
+# from torch.utils.data import TensorDataset, DataLoader
+# from torch import nn
+# import time
+
+# def slicewindow(data, time_length):
+#     """
+#     Create dataset with a sliding window.
+#     """
+#     X = []
+#     for i in range(0, len(data) - time_length + 1, time_length):
+#         end = i + time_length
+#         oneX = data[i:end, :]
+#         X.append(oneX)
+#     return np.asarray(X, dtype='float64')
+
+# class RNN(nn.Module):
+#     def __init__(self):
+#         super(RNN, self).__init__()
+#         self.rnn = nn.LSTM(
+#             input_size=12,
+#             hidden_size=20,
+#             num_layers=1,
+#             batch_first=True
+#         )
+#         self.out = nn.Linear(20, 10)
+#     def forward(self, x):
+#         r_out, (h_n, h_c) = self.rnn(x, None)
+#         out = self.out(r_out[:, -1, :])
+#         # out = F.log_softmax(out, dim=1)
+#         return out
+
+# if __name__ == "__main__":
+#     time_start = time.time()
+#     time_length = 20
+#     interpolation_number = 3
+
+#     # Use relative paths for processed data (make sure the preprocessing scripts have run)
+#     total_dataset_path = './processed_data/total_dataset' + str(time_length) + str(interpolation_number) + '.csv'
+#     total_labelset_path = './processed_data/total_labelset' + str(time_length) + str(interpolation_number) + '.csv'
+
+#     dataset = pd.read_csv(total_dataset_path, index_col=0)
+#     # labelset = pd.read_csv(total_labelset_path, index_col=0)
+#     labelset = pd.read_csv(total_labelset_path)
+
+#     min_max_scaler = MinMaxScaler()
+#     min_max_scaler.fit(dataset)
+#     data = min_max_scaler.transform(dataset)
+#     X = slicewindow(data, time_length)
+
+#     y = np.array(labelset['0'])
+#     encoder = LabelEncoder()
+#     encoder.fit(y)
+#     y = encoder.transform(y)
+
+#     X_train, X_test, Y_train, Y_test = train_test_split(X, y, test_size=0.2, 
+#                                                         random_state=6, stratify=y)
+#     X_train, Y_train = torch.FloatTensor(X_train), torch.LongTensor(Y_train)
+#     X_test, Y_test = torch.FloatTensor(X_test), torch.LongTensor(Y_test)
+
+#     train_dataset = TensorDataset(X_train, Y_train)
+#     test_dataset = TensorDataset(X_test, Y_test)
+
+#     # You may wish to adjust num_workers according to your system
+#     train_loader = DataLoader(dataset=train_dataset, batch_size=len(X_train), 
+#                             shuffle=True, num_workers=12)
+#     test_loader = DataLoader(dataset=test_dataset, batch_size=len(X_test), 
+#                             shuffle=True, num_workers=12)
+
+#     rnn = RNN()
+#     print(rnn)
+#     optimizer = torch.optim.Adam(rnn.parameters(), lr=0.01)
+#     loss_func = nn.CrossEntropyLoss()
+#     accuracy_list = []
+
+#     for epoch in range(3):
+#         for step, (b_x, b_y) in enumerate(train_loader):
+#             # print("b_x shape:", b_x.shape)
+#             # b_x = b_x.view(-1, time_length, 12)
+#             output = rnn(b_x)
+#             loss = loss_func(output, b_y)
+#             loss.requires_grad_()
+#             optimizer.zero_grad()
+#             loss.backward()
+#             optimizer.step()
+#             if step % 10 == 0:
+#                 test_out = rnn(X_test.view(-1, time_length, 12))
+#                 pred_y = torch.max(test_out, 1)[1].data
+#                 accuracy = pred_y.eq(Y_test.data.view_as(pred_y)).cpu().sum() / len(Y_test)
+#                 accuracy_list.append(accuracy)
+#                 print('Epoch:', epoch, '| train loss: %.4f' % loss.data.numpy(), 
+#                     '| test accuracy: %.2f' % accuracy)
+#     print('Max accuracy:{}'.format(max(accuracy_list)))
+#     test_output = rnn(X_test[:20].view(-1, time_length, 12))
+#     pred_y = torch.max(test_output, 1)[1].data.numpy()
+#     print(pred_y, 'predicted labels')
+#     print(Y_test[:20], 'true labels')
+#     time_end = time.time()
+#     print('Total time cost:', time_end - time_start)
+
+
+#second gpt code
+
 #!/usr/bin/env python3
 import numpy as np
 import pandas as pd
@@ -356,6 +464,8 @@ import time
 def slicewindow(data, time_length):
     """
     Create dataset with a sliding window.
+    Assumes data is 2D (num_samples, num_features) and returns a 3D
+    array of shape (num_windows, time_length, num_features).
     """
     X = []
     for i in range(0, len(data) - time_length + 1, time_length):
@@ -365,43 +475,46 @@ def slicewindow(data, time_length):
     return np.asarray(X, dtype='float64')
 
 class RNN(nn.Module):
-    def __init__(self):
-        super(RNN, self).init()
+    def __init__(self, input_size=10): # adjusted input_size to 10
+        super(RNN, self).__init__()
         self.rnn = nn.LSTM(
-            input_size=12,
+            input_size=input_size,
             hidden_size=20,
             num_layers=1,
             batch_first=True
         )
-        self.out = nn.Linear(20, 10)
-def forward(self, x):
-    r_out, (h_n, h_c) = self.rnn(x, None)
-    out = self.out(r_out[:, -1, :])
-    # out = F.log_softmax(out, dim=1)
-    return out
+        self.out = nn.Linear(20, 10) # output layer remains as is (10 classes)
+    def forward(self, x):
+        r_out, (h_n, h_c) = self.rnn(x, None)
+        out = self.out(r_out[:, -1, :])
+        return out
 
 if __name__ == "__main__":
     time_start = time.time()
     time_length = 20
     interpolation_number = 3
-
     # Use relative paths for processed data (make sure the preprocessing scripts have run)
     total_dataset_path = './processed_data/total_dataset' + str(time_length) + str(interpolation_number) + '.csv'
     total_labelset_path = './processed_data/total_labelset' + str(time_length) + str(interpolation_number) + '.csv'
 
+    # Read dataset and labelset. (Labels column is named '0' in the CSV.)
     dataset = pd.read_csv(total_dataset_path, index_col=0)
-    labelset = pd.read_csv(total_labelset_path, index_col=0)
+    labelset = pd.read_csv(total_labelset_path)
 
+    # Fit scaler on dataset and transform.
     min_max_scaler = MinMaxScaler()
     min_max_scaler.fit(dataset)
     data = min_max_scaler.transform(dataset)
+    # Create sliding windows.  The returned shape will be (num_windows, time_length, num_features)
     X = slicewindow(data, time_length)
 
+    # Extract label column; here labelset['0'] contains the labels.
     y = np.array(labelset['0'])
     encoder = LabelEncoder()
     encoder.fit(y)
     y = encoder.transform(y)
 
+    # Split data into train and test sets.
     X_train, X_test, Y_train, Y_test = train_test_split(X, y, test_size=0.2, 
                                                         random_state=6, stratify=y)
     X_train, Y_train = torch.FloatTensor(X_train), torch.LongTensor(Y_train)
@@ -410,36 +523,39 @@ if __name__ == "__main__":
     train_dataset = TensorDataset(X_train, Y_train)
     test_dataset = TensorDataset(X_test, Y_test)
 
-    # You may wish to adjust num_workers according to your system
+    # Adjust num_workers if necessary (suggested max on your system seems to be 8).
     train_loader = DataLoader(dataset=train_dataset, batch_size=len(X_train), 
-                            shuffle=True, num_workers=12)
+                            shuffle=True, num_workers=8)
     test_loader = DataLoader(dataset=test_dataset, batch_size=len(X_test), 
-                            shuffle=True, num_workers=12)
+                            shuffle=True, num_workers=8)
 
+    # Set input_size based on your dataset's feature dimension.
+    input_size = X_train.shape[2]  # should be 10 now
     rnn = RNN()
     print(rnn)
     optimizer = torch.optim.Adam(rnn.parameters(), lr=0.01)
     loss_func = nn.CrossEntropyLoss()
     accuracy_list = []
 
-    for epoch in range(5000):
+# Training (using 3 epochs for quick testing)
+    for epoch in range(100):
         for step, (b_x, b_y) in enumerate(train_loader):
-            b_x = b_x.view(-1, time_length, 12)
+            # b_x is already of shape [batch, time_length, input_size] i.e. (N, 20, 10)
             output = rnn(b_x)
             loss = loss_func(output, b_y)
-            loss.requires_grad_()
             optimizer.zero_grad()
             loss.backward()
             optimizer.step()
             if step % 10 == 0:
-                test_out = rnn(X_test.view(-1, time_length, 12))
+                # Evaluate using the test set without additional reshaping.
+                test_out = rnn(X_test)
                 pred_y = torch.max(test_out, 1)[1].data
                 accuracy = pred_y.eq(Y_test.data.view_as(pred_y)).cpu().sum() / len(Y_test)
                 accuracy_list.append(accuracy)
-                print('Epoch:', epoch, '| train loss: %.4f' % loss.data.numpy(), 
+                print('Epoch:', epoch, '| train loss: %.4f' % loss.item(), 
                     '| test accuracy: %.2f' % accuracy)
     print('Max accuracy:{}'.format(max(accuracy_list)))
-    test_output = rnn(X_test[:20].view(-1, time_length, 12))
+    test_output = rnn(X_test[:20])
     pred_y = torch.max(test_output, 1)[1].data.numpy()
     print(pred_y, 'predicted labels')
     print(Y_test[:20], 'true labels')

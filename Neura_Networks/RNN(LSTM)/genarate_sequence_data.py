@@ -234,4 +234,4 @@ for (accident, starting_point) in Type.items():
 all_time_sequence_value = pd.DataFrame(all_time_sequence_value)
 #Save the merged time-sequence data to a relative folder (create folder "sequence_data" if needed)
 os.makedirs('./sequence_data', exist_ok=True)
-all_time_sequence_value.to_csv('./sequence_data/dataset50.csv', index=False)
+all_time_sequence_value.to_csv('./sequence_data/dataset20.csv', index=False)
