@@ -1,0 +1,117 @@
+network unknown {
+}
+variable LLOCA {
+  type discrete [ 2 ] { no, yes };
+}
+variable LSGTR {
+  type discrete [ 2 ] { no, yes };
+}
+variable LMSLB {
+  type discrete [ 2 ] { no, yes };
+}
+variable CR {
+  type discrete [ 3 ] { lower, normal, higher };
+}
+variable CP {
+  type discrete [ 3 ] { lower, normal, higher };
+}
+variable CT {
+  type discrete [ 3 ] { lower, normal, higher };
+}
+variable PWL {
+  type discrete [ 3 ] { lower, normal, higher };
+}
+variable UDF {
+  type discrete [ 3 ] { lower, normal, higher };
+}
+
+variable RP {
+  type discrete [ 3 ] { lower, normal, higher };
+}
+variable RWL {
+  type discrete [ 3 ] { lower, normal, higher };
+}
+variable SG1WF {
+  type discrete [ 3 ] { lower, normal, higher };
+}
+variable AT {
+  type discrete [ 3 ] { lower, normal, higher };
+}
+variable SG1SF {
+  type discrete [ 3 ] { lower, normal, higher };
+}
+variable SG1OP {
+  type discrete [ 3 ] { lower, normal, higher };
+}
+variable MSHP {
+  type discrete [ 3 ] { lower, normal, higher };
+}
+probability ( LLOCA ) {
+  table 0.9, 0.1;
+}
+probability ( LSGTR ) {
+  table 0.9, 0.1;
+}
+probability ( LMSLB ) {
+  table 0.9, 0.1;
+}
+probability ( CR | LLOCA ) {
+  (no) 0, 0.95, 0.05;
+  (yes) 0, 0.05, 0.95;
+
+}
+probability ( CP | LLOCA ) {
+  (no) 0, 0.95, 0.05;
+  (yes) 0, 0.05, 0.95;
+}
+probability ( CT | LLOCA ) {
+  (no) 0, 0.95, 0.05;
+  (yes) 0, 0.05, 0.95;
+}
+probability ( PWL | LLOCA ) {
+  (no) 0.05, 0.95, 0;
+  (yes) 0, 0.05, 0.95;
+}
+
+probability ( RP | LLOCA, LSGTR, LMSLB ) {
+  (yes, yes, yes) 0.99, 0.01, 0;
+  (yes, yes, no) 0.99, 0.005, 0.005;
+  (yes, no, yes) 0.99, 0.005, 0.005;
+  (yes, no, no) 0.98, 0.01, 0.01;
+  (no, yes, yes) 0.99, 0.005, 0.005;
+  (no, yes, no) 0.98, 0.01, 0.01;
+  (no, no, yes) 0.98, 0.01, 0.01;
+  (no, no, no) 0.01, 0.98, 0.01;
+}
+probability ( RWL | RP ) {
+  (lower) 0.99, 0.01, 0;
+  (normal) 0.02, 0.96, 0.02;
+  (higher) 0, 0.99, 0.01
+}
+probability ( UDF | LLOCA, LSGTR ) {
+  (yes, yes) 0, 0.01, 0.99;
+  (yes, no) 0.005, 0.005, 0.99;
+  (no, yes) 0.005, 0.005, 0.99
+  (no, no) 0.005, 0.99, 0.005
+
+}
+probability ( SG1WF | LSGTR ) {
+  (no) 0.005, 0.99, 0.005;
+  (yes) 0.95, 0.05, 0;
+}
+probability ( AT | LMSLB ) {
+  (no) 0.005, 0.99, 0.005;
+  (yes) 0.95, 0.05, 0;
+}
+probability ( SG1SF | LMSLB ) {
+  (no) 0.005, 0.99, 0.005;
+  (yes) 0, 0.05, 0.95;
+}
+probability ( SG1OP | LMSLB ) {
+  (no) 0.005, 0.99, 0.005;
+  (yes) 0.95, 0.05, 0;
+}
+probability ( MSHP | LMSLB ) {
+  (no) 0.005, 0.99, 0.005;
+  (yes) 0.95, 0.05, 0;
+}
